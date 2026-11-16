@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StepUp - لوحة البائع</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>StepUp Admin</h1>
+        <nav>
+            <a href="index.html">عرض المتجر</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <div id="login-box" class="admin-form">
+            <h3>تسجيل الدخول</h3>
+            <input id="email" type="email" placeholder="الإيميل">
+            <input id="password" type="password" placeholder="كلمة السر">
+            <button onclick="login()">دخول</button>
+        </div>
+
+        <div id="admin-panel" style="display:none">
+
+            <button onclick="logout()">تسجيل الخروج</button>
+
+            <h2>إدارة المنتجات</h2>
+
+            <div class="admin-form">
+                <h3>إضافة منتج جديد</h3>
+
+                <input id="name" type="text" placeholder="اسم الحذاء">
+                <input id="price" type="number" placeholder="السعر بالدينار">
+                <input id="image" type="file" accept="image/*">
+
+                <button onclick="addProduct()">إضافة المنتج</button>
+            </div>
+
+            <h2>المنتجات الحالية</h2>
+            <div id="admin-products"></div>
+
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="admin.js"></script>
+
+</body>
+</html>
