@@ -1,5 +1,5 @@
 
- // عرض المنتجات
+// عرض المنتجات
 async function showProducts() {
     const container = document.getElementById("admin-products");
     container.innerHTML = "جاري التحميل...";
@@ -16,7 +16,6 @@ async function showProducts() {
     }
 
     container.innerHTML = "";
-
     if (!products || products.length === 0) {
         container.innerHTML = "ما كاين حتى منتج دوك";
         return;
@@ -28,11 +27,11 @@ async function showProducts() {
                 <img src="${product.image_url}" alt="${product.name}">
                 <h3>${product.name}</h3>
                 <p>${product.price} DA</p>
+                <p>${product.description || ""}</p>
 
                 <button onclick="editProduct(${product.id})">
                     تعديل المنتج
                 </button>
-
                 <button onclick="deleteProduct(${product.id})">
                     حذف المنتج
                 </button>
@@ -42,7 +41,7 @@ async function showProducts() {
 }
 
 
-// تعديل منتج مع إمكانية تغيير الصورة
+// تعديل منتج مع الاسم والسعر والوصف والصورة
 async function editProduct(id) {
     const { data: product, error } = await db
         .from("products")
@@ -63,8 +62,16 @@ async function editProduct(id) {
 
     if (newPrice === null) return;
 
+    const newDescription = prompt(
+        "اكتب وصف المنتج الجديد:",
+        product.description || ""
+    );
+
+    if (newDescription === null) return;
+
     const name = newName.trim();
     const price = Number(newPrice);
+    const description = newDescription.trim();
 
     if (!name || !Number.isFinite(price) || price <= 0) {
         alert("يرجى إدخال اسم وسعر صحيحين");
@@ -101,7 +108,8 @@ async function editProduct(id) {
         }
 
         const extension = file.name.split(".").pop();
-        const fileName = Date.now() + "-" + Math.random().toString(36).slice(2) + "." + extension;
+        const fileName = Date.now() + "-" +
+            Math.random().toString(36).slice(2) + "." + extension;
 
         const { error: uploadError } = await db.storage
             .from("product-images")
@@ -124,6 +132,7 @@ async function editProduct(id) {
         .update({
             name: name,
             price: price,
+            description: description,
             image_url: newImageUrl
         })
         .eq("id", id);
@@ -141,7 +150,6 @@ async function editProduct(id) {
 // حذف منتج
 async function deleteProduct(id) {
     const confirmed = confirm("هل أنت متأكد من حذف هذا المنتج؟");
-
     if (!confirmed) return;
 
     const { error } = await db
@@ -257,4 +265,4 @@ async function addProduct() {
 
 // تشغيل لوحة التحكم
 checkSession();
-          
+     
