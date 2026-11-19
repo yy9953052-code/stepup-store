@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -34,8 +35,17 @@
             <div class="admin-form">
                 <h3>إضافة منتج جديد</h3>
 
-                <input id="name" type="text" placeholder="اسم الحذاء">
+                <input id="name" type="text" placeholder="اسم المنتج">
                 <input id="price" type="number" placeholder="السعر بالدينار">
+
+                <select id="category">
+                    <option value="">اختر تصنيف المنتج</option>
+                    <option value="أحذية">أحذية</option>
+                    <option value="ملابس">ملابس</option>
+                    <option value="أدوات">أدوات</option>
+                    <option value="إكسسوارات">إكسسوارات</option>
+                </select>
+
                 <input id="image" type="file" accept="image/*">
 
                 <button onclick="addProduct()">إضافة المنتج</button>

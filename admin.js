@@ -16,6 +16,7 @@ async function showProducts() {
     }
 
     container.innerHTML = "";
+
     if (!products || products.length === 0) {
         container.innerHTML = "ما كاين حتى منتج دوك";
         return;
@@ -27,6 +28,7 @@ async function showProducts() {
                 <img src="${product.image_url}" alt="${product.name}">
                 <h3>${product.name}</h3>
                 <p>${product.price} DA</p>
+                <p>التصنيف: ${product.category || "غير محدد"}</p>
                 <p>${product.description || ""}</p>
 
                 <button onclick="editProduct(${product.id})">
@@ -41,7 +43,7 @@ async function showProducts() {
 }
 
 
-// تعديل منتج مع الاسم والسعر والوصف والصورة
+// تعديل منتج
 async function editProduct(id) {
     const { data: product, error } = await db
         .from("products")
@@ -55,26 +57,30 @@ async function editProduct(id) {
     }
 
     const newName = prompt("اكتب اسم المنتج الجديد:", product.name);
-
     if (newName === null) return;
 
     const newPrice = prompt("اكتب السعر الجديد:", product.price);
-
     if (newPrice === null) return;
 
     const newDescription = prompt(
         "اكتب وصف المنتج الجديد:",
         product.description || ""
     );
-
     if (newDescription === null) return;
+
+    const newCategory = prompt(
+        "اكتب التصنيف الجديد (أحذية، ملابس، أدوات، إكسسوارات):",
+        product.category || ""
+    );
+    if (newCategory === null) return;
 
     const name = newName.trim();
     const price = Number(newPrice);
     const description = newDescription.trim();
+    const category = newCategory.trim();
 
-    if (!name || !Number.isFinite(price) || price <= 0) {
-        alert("يرجى إدخال اسم وسعر صحيحين");
+    if (!name || !Number.isFinite(price) || price <= 0 || !category) {
+        alert("يرجى إدخال اسم وسعر وتصنيف صحيح");
         return;
     }
 
@@ -133,6 +139,7 @@ async function editProduct(id) {
             name: name,
             price: price,
             description: description,
+            category: category,
             image_url: newImageUrl
         })
         .eq("id", id);
@@ -217,11 +224,17 @@ async function checkSession() {
 async function addProduct() {
     const name = document.getElementById("name").value.trim();
     const price = Number(document.getElementById("price").value);
+    const category = document.getElementById("category").value;
     const fileInput = document.getElementById("image");
     const file = fileInput.files[0];
 
-    if (!name || !Number.isFinite(price) || price <= 0 || !file) {
+    if (!name || !Number.isFinite(price) || price <= 0 || !category || !file) {
         alert("يرجى ملء جميع المعلومات واختيار صورة");
+        return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+        alert("يرجى اختيار ملف صورة صحيح");
         return;
     }
 
@@ -246,6 +259,7 @@ async function addProduct() {
         .insert({
             name: name,
             price: price,
+            category: category,
             image_url: urlData.publicUrl
         });
 
@@ -256,6 +270,7 @@ async function addProduct() {
 
     document.getElementById("name").value = "";
     document.getElementById("price").value = "";
+    document.getElementById("category").value = "";
     fileInput.value = "";
 
     showProducts();
@@ -265,4 +280,3 @@ async function addProduct() {
 
 // تشغيل لوحة التحكم
 checkSession();
-     
