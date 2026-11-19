@@ -47,4 +47,3 @@ function orderProduct(name, price) {
 }
 
 displayProducts();
-    
