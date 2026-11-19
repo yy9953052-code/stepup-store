@@ -1,4 +1,7 @@
 
+let allProducts = [];
+
+// عرض المنتجات
 async function displayProducts() {
     const productList = document.getElementById("product-list");
     productList.innerHTML = "جاري التحميل...";
@@ -14,10 +17,18 @@ async function displayProducts() {
         return;
     }
 
+    allProducts = products || [];
+    showFilteredProducts(allProducts);
+}
+
+
+// عرض المنتجات حسب التصنيف
+function showFilteredProducts(products) {
+    const productList = document.getElementById("product-list");
     productList.innerHTML = "";
 
-    if (!products || products.length === 0) {
-        productList.innerHTML = "ما كاين حتى منتج دوك";
+    if (products.length === 0) {
+        productList.innerHTML = "ما كاين حتى منتج في هذا التصنيف";
         return;
     }
 
@@ -43,6 +54,26 @@ async function displayProducts() {
     });
 }
 
+
+// فلترة المنتجات
+function filterProducts() {
+    const selectedCategory =
+        document.getElementById("category-filter").value;
+
+    if (selectedCategory === "الكل") {
+        showFilteredProducts(allProducts);
+        return;
+    }
+
+    const filteredProducts = allProducts.filter(product =>
+        product.category === selectedCategory
+    );
+
+    showFilteredProducts(filteredProducts);
+}
+
+
+// الطلب عبر WhatsApp
 function orderProduct(name, price) {
     const phone = "213557518755";
 
@@ -62,4 +93,6 @@ function orderProduct(name, price) {
     window.open(url, "_blank");
 }
 
+
+// تشغيل المتجر
 displayProducts();

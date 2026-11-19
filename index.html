@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -26,6 +27,15 @@
 
     <main id="products">
         <h2>منتجاتنا</h2>
+
+        <select id="category-filter" onchange="filterProducts()">
+            <option value="الكل">كل المنتجات</option>
+            <option value="أحذية">أحذية</option>
+            <option value="ملابس">ملابس</option>
+            <option value="أدوات">أدوات</option>
+            <option value="إكسسوارات">إكسسوارات</option>
+        </select>
+
         <div id="product-list">
             المنتجات ستظهر هنا...
         </div>
@@ -34,9 +44,10 @@
     <footer>
         <p>© 2026 StepUp - جميع الحقوق محفوظة</p>
     </footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
     <script src="script.js"></script>
+
 </body>
-      </html>
-      
+</html>
