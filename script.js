@@ -1,14 +1,50 @@
-
 let allProducts = [];
+let currentStore = null;
+
+// قراءة اسم المتجر (slug) من الرابط
+function getStoreSlug() {
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get("store");
+    if (fromQuery) return fromQuery.toLowerCase();
+
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
+    if (path && !path.includes(".") && !path.includes("/")) {
+        return path.toLowerCase();
+    }
+    return "stepup-shoes";
+}
 
 // عرض المنتجات
 async function displayProducts() {
     const productList = document.getElementById("product-list");
     productList.innerHTML = "جاري التحميل...";
 
+    const slug = getStoreSlug();
+
+    const { data: store, error: storeError } = await db
+        .from("stores")
+        .select("*")
+        .eq("slug", slug)
+        .maybeSingle();
+
+    if (storeError) {
+        productList.innerHTML = "صار خطأ في تحميل المتجر";
+        console.log(storeError);
+        return;
+    }
+
+    if (!store) {
+        productList.innerHTML = "هذا المتجر غير موجود";
+        return;
+    }
+
+    currentStore = store;
+    document.title = store.name;
+
     const { data: products, error } = await db
         .from("products")
         .select("*")
+        .eq("store_id", store.id)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -73,9 +109,14 @@ function filterProducts() {
 }
 
 
-// الطلب عبر WhatsApp
+// الطلب عبر WhatsApp (رقم المتجر الحالي)
 function orderProduct(name, price) {
-    const phone = "213557518755";
+    if (!currentStore || !currentStore.whatsapp) {
+        alert("رقم الواتساب غير متوفر لهذا المتجر");
+        return;
+    }
+
+    const phone = currentStore.whatsapp;
 
     const message =
         "السلام عليكم، حبيت نطلب: " +
