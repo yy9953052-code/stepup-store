@@ -1,4 +1,131 @@
 
+// إظهار واجهة إنشاء الحساب
+function showRegister() {
+    document.getElementById("login-box").style.display = "none";
+    document.getElementById("register-box").style.display = "block";
+}
+
+
+// العودة إلى تسجيل الدخول
+function showLogin() {
+    document.getElementById("register-box").style.display = "none";
+    document.getElementById("login-box").style.display = "block";
+}
+
+
+// إنشاء متجر التاجر
+async function ensureStoreExists(user) {
+    const { data: existingStore, error: searchError } = await db
+        .from("stores")
+        .select("id")
+        .eq("owner_id", user.id)
+        .maybeSingle();
+
+    if (searchError) {
+        alert("خطأ في التحقق من المتجر: " + searchError.message);
+        return false;
+    }
+
+    if (existingStore) {
+        return true;
+    }
+
+    const metadata = user.user_metadata || {};
+
+    const storeName = metadata.store_name;
+    const storeSlug = metadata.store_slug;
+    const storeWhatsapp = metadata.store_whatsapp;
+
+    if (!storeName || !storeSlug || !storeWhatsapp) {
+        alert("حسابك لا يحتوي على بيانات متجر. يرجى التواصل مع الإدارة.");
+        return false;
+    }
+
+    const { error: createError } = await db
+        .from("stores")
+        .insert({
+            owner_id: user.id,
+            name: storeName,
+            slug: storeSlug,
+            whatsapp: storeWhatsapp
+        });
+
+    if (createError) {
+        alert("خطأ في إنشاء المتجر: " + createError.message);
+        return false;
+    }
+
+    alert("تم إنشاء متجرك بنجاح!");
+    return true;
+}
+
+
+// إنشاء حساب تاجر جديد
+async function register() {
+    const email = document.getElementById("register-email").value.trim();
+    const password = document.getElementById("register-password").value;
+    const storeName = document.getElementById("store-name").value.trim();
+    const storeSlug = document.getElementById("store-slug").value
+        .trim()
+        .toLowerCase();
+    const whatsapp = document.getElementById("store-whatsapp").value.trim();
+
+    if (!email || !password || !storeName || !storeSlug || !whatsapp) {
+        alert("يرجى ملء جميع المعلومات");
+        return;
+    }
+
+    if (password.length < 6) {
+        alert("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+        return;
+    }
+
+    if (!/^[a-z0-9-]+$/.test(storeSlug)) {
+        alert("رابط المتجر يجب أن يحتوي على أحرف إنجليزية صغيرة وأرقام وشرطة فقط");
+        return;
+    }
+
+    if (!/^[0-9+ ]+$/.test(whatsapp)) {
+        alert("يرجى إدخال رقم WhatsApp صحيح");
+        return;
+    }
+
+    const { data, error } = await db.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+            data: {
+                store_name: storeName,
+                store_slug: storeSlug,
+                store_whatsapp: whatsapp
+            }
+        }
+    });
+
+    if (error) {
+        alert("خطأ في إنشاء الحساب: " + error.message);
+        return;
+    }
+
+    if (data.session && data.user) {
+        const storeCreated = await ensureStoreExists(data.user);
+
+        if (!storeCreated) {
+            return;
+        }
+
+        alert("تم إنشاء الحساب والمتجر بنجاح!");
+        checkSession();
+    } else {
+        alert("تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيد الحساب، ثم سجل الدخول لإنشاء متجرك.");
+        showLogin();
+
+        document.getElementById("email").value = email;
+        document.getElementById("password").value = "";
+    }
+}
+
+
 // عرض المنتجات
 async function showProducts() {
     const container = document.getElementById("admin-products");
@@ -200,7 +327,7 @@ async function logout() {
 }
 
 
-// التحقق من جلسة البائع
+// التحقق من جلسة التاجر
 async function checkSession() {
     const { data, error } = await db.auth.getSession();
 
@@ -211,10 +338,21 @@ async function checkSession() {
 
     if (data.session) {
         document.getElementById("login-box").style.display = "none";
+        document.getElementById("register-box").style.display = "none";
         document.getElementById("admin-panel").style.display = "block";
-        showProducts();
+
+        const storeReady = await ensureStoreExists(data.session.user);
+
+        if (storeReady) {
+            showProducts();
+        } else {
+            await db.auth.signOut();
+            document.getElementById("admin-panel").style.display = "none";
+            document.getElementById("login-box").style.display = "block";
+        }
     } else {
         document.getElementById("login-box").style.display = "block";
+        document.getElementById("register-box").style.display = "none";
         document.getElementById("admin-panel").style.display = "none";
     }
 }
@@ -238,7 +376,6 @@ async function addProduct() {
         return;
     }
 
-    // الحصول على حساب التاجر الحالي
     const { data: userData, error: userError } =
         await db.auth.getUser();
 
@@ -249,7 +386,6 @@ async function addProduct() {
 
     const user = userData.user;
 
-    // البحث عن متجر هذا التاجر
     const { data: store, error: storeError } = await db
         .from("stores")
         .select("id")
@@ -262,7 +398,6 @@ async function addProduct() {
         return;
     }
 
-    // رفع صورة المنتج
     const extension = file.name.split(".").pop();
     const fileName = Date.now() + "." + extension;
 
@@ -279,7 +414,6 @@ async function addProduct() {
         .from("product-images")
         .getPublicUrl(fileName);
 
-    // حفظ المنتج وربطه بمتجر التاجر
     const { error } = await db
         .from("products")
         .insert({
@@ -308,4 +442,4 @@ async function addProduct() {
 
 // تشغيل لوحة التحكم
 checkSession();
-        
+            
