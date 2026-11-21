@@ -1,3 +1,11 @@
+// عرض أي خطأ في الكود كرسالة (للتشخيص)
+window.addEventListener("error", function (e) {
+    alert("خطأ في الكود: " + e.message);
+});
+window.addEventListener("unhandledrejection", function (e) {
+    alert("خطأ: " + (e.reason && e.reason.message ? e.reason.message : e.reason));
+});
+
 let currentStore = null;
 
 // إظهار واجهة إنشاء الحساب
@@ -367,6 +375,8 @@ async function deleteProduct(id) {
 
 // تسجيل الدخول
 async function login() {
+    alert("الزر يخدم");
+
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
