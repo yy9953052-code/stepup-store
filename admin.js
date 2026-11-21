@@ -1,3 +1,4 @@
+let currentStore = null;
 
 // إظهار واجهة إنشاء الحساب
 function showRegister() {
@@ -126,14 +127,64 @@ async function register() {
 }
 
 
+// تحميل معلومات متجري وعرضها
+async function loadMyStore(user) {
+    const { data: store, error } = await db
+        .from("stores")
+        .select("*")
+        .eq("owner_id", user.id)
+        .maybeSingle();
+
+    if (error || !store) {
+        console.log(error);
+        document.getElementById("store-info-name").textContent =
+            "لم نجد متجرك";
+        document.getElementById("store-info-link").textContent = "";
+        currentStore = null;
+        return false;
+    }
+
+    currentStore = store;
+
+    const link = window.location.origin + "/?store=" + store.slug;
+
+    document.getElementById("store-info-name").textContent =
+        "متجرك: " + store.name;
+    document.getElementById("store-info-link").textContent =
+        "الرابط: " + link;
+
+    return true;
+}
+
+
+// فتح متجري في تبويب جديد
+function openMyStore() {
+    if (!currentStore) {
+        alert("لم نجد متجرك");
+        return;
+    }
+
+    window.open(
+        window.location.origin + "/?store=" + currentStore.slug,
+        "_blank"
+    );
+}
+
+
 // عرض المنتجات
 async function showProducts() {
     const container = document.getElementById("admin-products");
     container.innerHTML = "جاري التحميل...";
 
+    if (!currentStore) {
+        container.innerHTML = "لم نجد متجرك";
+        return;
+    }
+
     const { data: products, error } = await db
         .from("products")
         .select("*")
+        .eq("store_id", currentStore.id)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -172,10 +223,16 @@ async function showProducts() {
 
 // تعديل منتج
 async function editProduct(id) {
+    if (!currentStore) {
+        alert("لم نجد متجرك");
+        return;
+    }
+
     const { data: product, error } = await db
         .from("products")
         .select("*")
         .eq("id", id)
+        .eq("store_id", currentStore.id)
         .single();
 
     if (error || !product) {
@@ -269,7 +326,8 @@ async function editProduct(id) {
             category: category,
             image_url: newImageUrl
         })
-        .eq("id", id);
+        .eq("id", id)
+        .eq("store_id", currentStore.id);
 
     if (updateError) {
         alert("صار خطأ أثناء التعديل: " + updateError.message);
@@ -283,13 +341,19 @@ async function editProduct(id) {
 
 // حذف منتج
 async function deleteProduct(id) {
+    if (!currentStore) {
+        alert("لم نجد متجرك");
+        return;
+    }
+
     const confirmed = confirm("هل أنت متأكد من حذف هذا المنتج؟");
     if (!confirmed) return;
 
     const { error } = await db
         .from("products")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("store_id", currentStore.id);
 
     if (error) {
         alert("صار خطأ: " + error.message);
@@ -323,6 +387,7 @@ async function login() {
 // تسجيل الخروج
 async function logout() {
     await db.auth.signOut();
+    currentStore = null;
     checkSession();
 }
 
@@ -344,6 +409,7 @@ async function checkSession() {
         const storeReady = await ensureStoreExists(data.session.user);
 
         if (storeReady) {
+            await loadMyStore(data.session.user);
             showProducts();
         } else {
             await db.auth.signOut();
@@ -386,16 +452,12 @@ async function addProduct() {
 
     const user = userData.user;
 
-    const { data: store, error: storeError } = await db
-        .from("stores")
-        .select("id")
-        .eq("owner_id", user.id)
-        .single();
-
-    if (storeError || !store) {
-        console.log(storeError);
-        alert("لا يوجد متجر مرتبط بهذا الحساب. يجب إنشاء متجر أولاً.");
-        return;
+    if (!currentStore) {
+        const loaded = await loadMyStore(user);
+        if (!loaded) {
+            alert("لا يوجد متجر مرتبط بهذا الحساب. يجب إنشاء متجر أولاً.");
+            return;
+        }
     }
 
     const extension = file.name.split(".").pop();
@@ -422,7 +484,7 @@ async function addProduct() {
             category: category,
             image_url: urlData.publicUrl,
             owner_id: user.id,
-            store_id: store.id
+            store_id: currentStore.id
         });
 
     if (error) {
@@ -442,4 +504,3 @@ async function addProduct() {
 
 // تشغيل لوحة التحكم
 checkSession();
-            
