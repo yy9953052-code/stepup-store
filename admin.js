@@ -238,6 +238,31 @@ async function addProduct() {
         return;
     }
 
+    // الحصول على حساب التاجر الحالي
+    const { data: userData, error: userError } =
+        await db.auth.getUser();
+
+    if (userError || !userData.user) {
+        alert("لم نتمكن من التحقق من حسابك، سجل الدخول مجددًا");
+        return;
+    }
+
+    const user = userData.user;
+
+    // البحث عن متجر هذا التاجر
+    const { data: store, error: storeError } = await db
+        .from("stores")
+        .select("id")
+        .eq("owner_id", user.id)
+        .single();
+
+    if (storeError || !store) {
+        console.log(storeError);
+        alert("لا يوجد متجر مرتبط بهذا الحساب. يجب إنشاء متجر أولاً.");
+        return;
+    }
+
+    // رفع صورة المنتج
     const extension = file.name.split(".").pop();
     const fileName = Date.now() + "." + extension;
 
@@ -254,13 +279,16 @@ async function addProduct() {
         .from("product-images")
         .getPublicUrl(fileName);
 
+    // حفظ المنتج وربطه بمتجر التاجر
     const { error } = await db
         .from("products")
         .insert({
             name: name,
             price: price,
             category: category,
-            image_url: urlData.publicUrl
+            image_url: urlData.publicUrl,
+            owner_id: user.id,
+            store_id: store.id
         });
 
     if (error) {
@@ -280,3 +308,4 @@ async function addProduct() {
 
 // تشغيل لوحة التحكم
 checkSession();
+        
