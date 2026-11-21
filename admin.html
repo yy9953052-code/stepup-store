@@ -21,9 +21,35 @@
 
         <div id="login-box" class="admin-form">
             <h3>تسجيل الدخول</h3>
+
             <input id="email" type="email" placeholder="الإيميل">
             <input id="password" type="password" placeholder="كلمة السر">
+
             <button onclick="login()">دخول</button>
+
+            <hr>
+
+            <p>ليس لديك حساب؟</p>
+            <button onclick="showRegister()">إنشاء حساب جديد</button>
+        </div>
+
+        <div id="register-box" class="admin-form" style="display:none">
+            <h3>إنشاء متجر جديد</h3>
+
+            <input id="register-email" type="email" placeholder="البريد الإلكتروني">
+
+            <input id="register-password" type="password" placeholder="كلمة المرور">
+
+            <input id="store-name" type="text" placeholder="اسم متجرك">
+
+            <input id="store-slug" type="text" placeholder="رابط المتجر بالإنجليزية مثال: my-store">
+
+            <input id="store-whatsapp" type="tel" placeholder="رقم WhatsApp مع رمز الدولة">
+
+            <button onclick="register()">إنشاء المتجر</button>
+
+            <p>لديك حساب بالفعل؟</p>
+            <button onclick="showLogin()">العودة إلى تسجيل الدخول</button>
         </div>
 
         <div id="admin-panel" style="display:none">
@@ -63,4 +89,5 @@
     <script src="admin.js"></script>
 
 </body>
-</html>
+                        </html>
+    
