@@ -375,8 +375,6 @@ async function deleteProduct(id) {
 
 // تسجيل الدخول
 async function login() {
-    alert("الزر يخدم");
-
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
