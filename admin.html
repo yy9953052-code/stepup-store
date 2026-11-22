@@ -39,31 +39,62 @@
 
             <h3>إنشاء متجر جديد</h3>
 
-            <input
-                id="register-email"
-                type="email"
-                placeholder="البريد الإلكتروني"
-            >
+            <input id="register-email" type="email" placeholder="البريد الإلكتروني">
+            <input id="register-password" type="password" placeholder="كلمة المرور">
+            <input id="store-name" type="text" placeholder="اسم متجرك">
+            <input id="store-slug" type="text" placeholder="رابط المتجر بالإنجليزية مثال: my-store">
+            <input id="store-whatsapp" type="tel" placeholder="رقم WhatsApp مع رمز الدولة">
 
-            <input
-                id="register-password"
-                type="password"
-                placeholder="كلمة المرور"
-            >
+            <button onclick="register()">إنشاء المتجر</button>
 
-            <input
-                id="store-name"
-                type="text"
-                placeholder="اسم متجرك"
-            >
+            <p>لديك حساب بالفعل؟</p>
+            <button onclick="showLogin()">العودة إلى تسجيل الدخول</button>
 
-            <input
-                id="store-slug"
-                type="text"
-                placeholder="رابط المتجر بالإنجليزية مثال: my-store"
-            >
+        </div>
 
-            <input
-                id="store-whatsapp"
-                type="tel"
-                placeholder="رقم WhatsApp مع رمز الدولة"
+
+        <!-- لوحة الإدارة -->
+        <div id="admin-panel" style="display:none">
+
+            <button onclick="logout()">تسجيل الخروج</button>
+
+            <div id="store-info" class="admin-form">
+                <h3 id="store-info-name">جاري التحميل...</h3>
+                <p id="store-info-link"></p>
+                <button id="store-info-btn" onclick="openMyStore()">عرض متجري</button>
+            </div>
+
+            <h2>إدارة المنتجات</h2>
+
+            <div class="admin-form">
+                <h3>إضافة منتج جديد</h3>
+
+                <input id="name" type="text" placeholder="اسم المنتج">
+                <input id="price" type="number" placeholder="السعر بالدينار">
+
+                <select id="category">
+                    <option value="">اختر تصنيف المنتج</option>
+                    <option value="أحذية">أحذية</option>
+                    <option value="ملابس">ملابس</option>
+                    <option value="أدوات">أدوات</option>
+                    <option value="إكسسوارات">إكسسوارات</option>
+                </select>
+
+                <input id="image" type="file" accept="image/*">
+
+                <button onclick="addProduct()">إضافة المنتج</button>
+            </div>
+
+            <h2>المنتجات الحالية</h2>
+            <div id="admin-products"></div>
+
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js?v=3"></script>
+    <script src="admin.js?v=3"></script>
+
+</body>
+</html>
