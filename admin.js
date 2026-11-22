@@ -1,12 +1,15 @@
+
 // عرض أي خطأ في الكود كرسالة (للتشخيص)
 window.addEventListener("error", function (e) {
     alert("خطأ في الكود: " + e.message);
 });
+
 window.addEventListener("unhandledrejection", function (e) {
     alert("خطأ: " + (e.reason && e.reason.message ? e.reason.message : e.reason));
 });
 
 let currentStore = null;
+
 
 // إظهار واجهة إنشاء الحساب
 function showRegister() {
@@ -89,8 +92,8 @@ async function register() {
         return;
     }
 
-    if (!/^[a-z0-9-]+$/.test(storeSlug)) {
-        alert("رابط المتجر يجب أن يحتوي على أحرف إنجليزية صغيرة وأرقام وشرطة فقط");
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(storeSlug)) {
+        alert("رابط المتجر يجب أن يحتوي على أحرف إنجليزية صغيرة وأرقام وشرطة بين الكلمات فقط");
         return;
     }
 
@@ -99,6 +102,24 @@ async function register() {
         return;
     }
 
+    // التحقق من أن رابط المتجر غير مستخدم
+    const { data: existingStore, error: checkError } = await db
+        .from("stores")
+        .select("id")
+        .eq("slug", storeSlug)
+        .maybeSingle();
+
+    if (checkError) {
+        alert("تعذر التحقق من رابط المتجر: " + checkError.message);
+        return;
+    }
+
+    if (existingStore) {
+        alert("هذا الرابط مستعمل بالفعل. اختر رابطًا آخر.");
+        return;
+    }
+
+    // إنشاء الحساب بعد التأكد من توفر الرابط
     const { data, error } = await db.auth.signUp({
         email: email,
         password: password,
@@ -127,6 +148,7 @@ async function register() {
         checkSession();
     } else {
         alert("تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيد الحساب، ثم سجل الدخول لإنشاء متجرك.");
+
         showLogin();
 
         document.getElementById("email").value = email;
@@ -158,6 +180,7 @@ async function loadMyStore(user) {
 
     document.getElementById("store-info-name").textContent =
         "متجرك: " + store.name;
+
     document.getElementById("store-info-link").textContent =
         "الرابط: " + link;
 
@@ -220,6 +243,7 @@ async function showProducts() {
                 <button onclick="editProduct(${product.id})">
                     تعديل المنتج
                 </button>
+
                 <button onclick="deleteProduct(${product.id})">
                     حذف المنتج
                 </button>
@@ -258,12 +282,14 @@ async function editProduct(id) {
         "اكتب وصف المنتج الجديد:",
         product.description || ""
     );
+
     if (newDescription === null) return;
 
     const newCategory = prompt(
         "اكتب التصنيف الجديد (أحذية، ملابس، أدوات، إكسسوارات):",
         product.category || ""
     );
+
     if (newCategory === null) return;
 
     const name = newName.trim();
@@ -306,6 +332,7 @@ async function editProduct(id) {
         }
 
         const extension = file.name.split(".").pop();
+
         const fileName = Date.now() + "-" +
             Math.random().toString(36).slice(2) + "." + extension;
 
@@ -355,6 +382,7 @@ async function deleteProduct(id) {
     }
 
     const confirmed = confirm("هل أنت متأكد من حذف هذا المنتج؟");
+
     if (!confirmed) return;
 
     const { error } = await db
@@ -421,6 +449,7 @@ async function checkSession() {
             showProducts();
         } else {
             await db.auth.signOut();
+
             document.getElementById("admin-panel").style.display = "none";
             document.getElementById("login-box").style.display = "block";
         }
@@ -462,6 +491,7 @@ async function addProduct() {
 
     if (!currentStore) {
         const loaded = await loadMyStore(user);
+
         if (!loaded) {
             alert("لا يوجد متجر مرتبط بهذا الحساب. يجب إنشاء متجر أولاً.");
             return;
@@ -506,9 +536,11 @@ async function addProduct() {
     fileInput.value = "";
 
     showProducts();
+
     alert("تمت إضافة المنتج بنجاح!");
 }
 
 
 // تشغيل لوحة التحكم
 checkSession();
+              
