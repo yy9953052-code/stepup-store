@@ -77,13 +77,17 @@
         </div>
 
         <!-- لوحة البائع -->
-        <div id="dashboard" style="display:none">
+        <div id="admin-panel" style="display:none">
 
             <h2>لوحة التحكم</h2>
 
+            <!-- معلومات المتجر -->
             <div class="admin-form">
                 <h3>متجري</h3>
-                <p id="my-store-link"></p>
+
+                <p id="store-info-name"></p>
+                <p id="store-info-link"></p>
+
                 <button onclick="openMyStore()">عرض متجري</button>
             </div>
 
@@ -92,30 +96,25 @@
                 <h3>إضافة منتج جديد</h3>
 
                 <input
-                    id="product-name"
+                    id="name"
                     type="text"
                     placeholder="اسم المنتج"
                 >
 
                 <input
-                    id="product-price"
+                    id="price"
                     type="number"
                     placeholder="السعر بالدينار"
                 >
 
                 <input
-                    id="product-category"
+                    id="category"
                     type="text"
                     placeholder="صنف المنتج"
                 >
 
-                <textarea
-                    id="product-description"
-                    placeholder="وصف المنتج"
-                ></textarea>
-
                 <input
-                    id="product-image"
+                    id="image"
                     type="file"
                     accept="image/*"
                 >
@@ -126,7 +125,8 @@
             <!-- المنتجات -->
             <div class="admin-form">
                 <h3>منتجات متجري</h3>
-                <div id="products-list"></div>
+
+                <div id="admin-products"></div>
             </div>
 
             <button onclick="logout()">تسجيل الخروج</button>
