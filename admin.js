@@ -498,6 +498,23 @@ async function addProduct() {
         }
     }
 
+    // التحقق من عدد المنتجات قبل رفع الصورة
+    const { count: productCount, error: countError } = await db
+        .from("products")
+        .select("id", { count: "exact", head: true })
+        .eq("store_id", currentStore.id);
+
+    if (countError) {
+        alert("تعذر التحقق من عدد المنتجات: " + countError.message);
+        return;
+    }
+
+    if (productCount >= 20) {
+        alert("وصلت إلى الحد الأقصى لمتجرك: 20 منتجًا. احذف منتجًا قبل إضافة منتج جديد.");
+        return;
+    }
+
+    // رفع الصورة بعد التأكد من أن المتجر لم يصل إلى الحد
     const extension = file.name.split(".").pop();
     const fileName = Date.now() + "." + extension;
 
